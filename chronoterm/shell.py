@@ -69,11 +69,52 @@ def now():
 
 @app.command()
 def time():
+
+    clock_ascii = """
+   ___
+  |---|
+  |_|_|
+  |   |
+  |   |
+  |   |
+  |   |
+  |   |
+  |___|
+ /_____\\
+ |HH:MM|
+ |_____|
+ |.....|
+ \ ___ /
+  |   |
+  |   |
+  |   |
+  | . |
+  | . |
+  | . | 
+  | . |
+  | . |
+  | . |
+  | . |
+  | . |
+  |___|
+
+    """
+
     current_time = str(datetime.now())
     current_time_unsuffix = re.sub(r"\.\d+", "", current_time)
     current_time_unprefix = re.sub(r"....\-..\-...", "", current_time_unsuffix)
     final_time = re.sub(r":\d\d$", "", current_time_unprefix)
-    console.print(final_time)
+    
+    # console.print(final_time)
+    # console.print(clock_ascii)
+
+    hour, minutes = final_time.split(":")
+    #print(f"{hour}, {minutes}")
+
+    clock_ascii = clock_ascii.replace("HH", f"{hour}")
+    clock_ascii = clock_ascii.replace("MM", f"{minutes}")
+
+    console.print(clock_ascii)
 
 @app.command()
 def world():
