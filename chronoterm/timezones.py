@@ -18,7 +18,7 @@ def _local_now() -> datetime:
 
 
 def format_dt(dt: datetime) -> str:
-    return dt.isoformat(timespec="seconds")
+    return dt.strftime("%H:%M")
 
 
 def _safe_zoneinfo(name: str) -> ZoneInfo:
