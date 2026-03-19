@@ -8,7 +8,6 @@ from chronoterm.state import StateStore
 
 COMMANDS = [
     "joke",
-    "joke_trex",
     "addtask",
     "deletetask",
     "updatetask",
@@ -40,6 +39,7 @@ JOKE_CHARACTERS = [
     "pig",
     "daemon",
 ]
+
 
 
 def _clear_screen() -> None:

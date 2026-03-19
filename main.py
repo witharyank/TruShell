@@ -66,11 +66,11 @@ def atoffice():
             try:
                 chronoterm_app(shlex.split(raw_command))
             except SystemExit:
-                # Typer exits after each command; keep the at-office shell running.
+                # TYper exits after each command, keep the at-office shell running.
                 pass
 
 
-        # additionals...
+        # additionals....
         elif command == "help":
             print("Available commands: joke, joke_trex, \n addtask, deletetask, updatetask, completetask, showtask, \nnow, time, world, tz, alarm, sw, \nsettings, exit, help")
         else:

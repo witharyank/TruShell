@@ -8,6 +8,18 @@ Each of them have their distinct commands, which can be accessed together in `at
  - `todocli commands` are a bunch of different commands that they can use to manage their time effectively.
  - `chronoterm commands` are used to do with everything relating to time, and timezones. It also has capanility to add alarms, and stopwatches.
 
+ todocli- dates use isoformat for easy storage
+
+ project.py- 
+  - is_valid_timezone() --> return True if timezone exists.
+  - format_current_time() --> return current time in a timezone as HH:MM.
+  - parse_alarm_time() --> parses a time string and return ISO formatted datetime string. Raises ValueError if invalid.
+
+ shell.py-
+  - now() --> Show current local time.
+  - time() --> Show the current local time in ASCII clock format.
+  - world() --> Show current time in your favorite time zones.
+
 ## Execution:
 `$ python main.py`
 

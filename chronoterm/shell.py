@@ -41,7 +41,7 @@ def _tz_table(tzs: list[str]) -> Table:
             table.add_row(name)
     return table
 
-# --- Persistent App State ---
+# Persistent App State
 
 class ChronoTerm:
     def __init__(self):
@@ -69,16 +69,14 @@ class ChronoTerm:
 # Global instance
 chrono = ChronoTerm()
 
-# --- Commands ---
+# Commands
 
 @app.command()
 def now():
-    """Show current local time."""
     console.print(chrono.tz.now_table())
 
 @app.command()
 def time():
-    """Show the current local time in ASCII clock format."""
     hour, minutes = datetime.now().strftime("%H:%M").split(":")
     template_name = chrono.store.load().time_template
     clockascii = clock_ascii(hour, minutes, template_name)
@@ -88,7 +86,6 @@ def time():
 
 @app.command()
 def world():
-    """Show current time in your favorite time zones."""
     console.print(chrono.tz.world_table())
 
 @app.command()
