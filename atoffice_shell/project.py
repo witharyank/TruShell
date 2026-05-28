@@ -54,18 +54,16 @@ class AtonEditor(App):
         ("ctrl+shift+q", "quit_app", "Ctrl+Shift+Q Quit"),
     ]
 
-    def __init__(self, file_path: str, **kwargs) -> None:
+    def __init__(self, file_path: str, initial_text: str | None = None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.file_path = file_path
-        self.file_content = ""
+        self.file_content = initial_text if initial_text is not None else ""
 
-        import os
-
-        if os.path.exists(file_path):
+        if initial_text is None and os.path.exists(file_path):
             try:
                 with open(file_path, "r", encoding="utf-8") as handle:
                     self.file_content = handle.read()
-            except Exception as error:
+            except OSError as error:
                 self.file_content = f"Error reading file: {error}"
 
     def compose(self) -> ComposeResult:
@@ -81,8 +79,8 @@ class AtonEditor(App):
         try:
             with open(self.file_path, "w", encoding="utf-8") as handle:
                 handle.write(text_area.text)
-        except Exception:
-            pass
+        except (PermissionError, OSError) as error:
+            self.notify(f"Failed to save file: {error}", severity="error")
 
     def action_quit_app(self) -> None:
         self.exit()
@@ -139,7 +137,7 @@ def _handle_edit_command(raw_command: str) -> bool:
     initial_text = file_path.read_text(encoding="utf-8") if file_path.exists() else ""
 
     try:
-        AtonEditor(str(file_path), initial_text).run()
+        AtonEditor(str(file_path), initial_text=initial_text).run()
     except Exception as error:
         typer.secho(f"Editor error: {error}", fg=typer.colors.RED)
 

@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from typer.testing import CliRunner
 
 from atoffice_shell.cli import app
-from atoffice_shell.project import _handle_cd_command, _handle_edit_command, _handle_local_command, _handle_os_fallback
+from atoffice_shell.project import AtonEditor, _handle_cd_command, _handle_edit_command, _handle_local_command, _handle_os_fallback
 
 
 runner = CliRunner()
@@ -118,3 +118,34 @@ def test_edit_launches_editor_for_existing_file(monkeypatch, tmp_path) -> None:
 
     assert _handle_edit_command(f"edit {file_path}") is True
     assert calls == {"filename": str(file_path), "initial_text": "hello", "ran": True}
+
+
+def test_aton_editor_uses_initial_text_without_re_reading_file(tmp_path) -> None:
+    file_path = tmp_path / "note.txt"
+    file_path.write_text("from-disk", encoding="utf-8")
+
+    editor = AtonEditor(str(file_path), initial_text="from-arg")
+
+    assert editor.file_content == "from-arg"
+
+
+def test_action_save_file_notifies_on_permission_error(monkeypatch, tmp_path) -> None:
+    file_path = tmp_path / "readonly.txt"
+    editor = AtonEditor(str(file_path), initial_text="draft")
+
+    notifications = []
+
+    class FakeTextArea:
+        text = "draft"
+
+    monkeypatch.setattr(editor, "query_one", lambda *_args, **_kwargs: FakeTextArea())
+    monkeypatch.setattr(editor, "notify", lambda message, severity=None: notifications.append((message, severity)))
+
+    def fail_open(*_args, **_kwargs):
+        raise PermissionError("read-only")
+
+    monkeypatch.setattr("builtins.open", fail_open)
+
+    editor.action_save_file()
+
+    assert notifications and "Failed to save file" in notifications[0][0]
