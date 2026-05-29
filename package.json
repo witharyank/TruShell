@@ -1,7 +1,7 @@
 {
-  "name": "at-office-shell",
+  "name": "trushell",
   "version": "1.0.0",
-  "description": "> **A modern, Linux-native productivity shell that integrates seamlessly with your workflow**",
+  "description": "TruShell - A modern terminal-based operating workspace interface",
   "main": "index.js",
   "directories": {
     "test": "tests"
@@ -9,16 +9,21 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "truos": "./bin/index.js",
+    "trushell": "./bin/index.js",
+    "TruOS": "./bin/index.js"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AkshajSinghal/at-office-shell.git"
+    "url": "git+https://github.com/AkshajSinghal/trushell.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Akshaj Singhal",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/AkshajSinghal/at-office-shell/issues"
+    "url": "https://github.com/AkshajSinghal/trushell/issues"
   },
-  "homepage": "https://github.com/AkshajSinghal/at-office-shell#readme"
+  "homepage": "https://github.com/AkshajSinghal/trushell#readme"
 }
