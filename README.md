@@ -1,100 +1,238 @@
-# AtOffice Shell
+# 🐧 TruShell
 
-AtOffice Shell is a polished open-source Python CLI that combines jokes, todos, alarms, world clocks, and a productivity-focused terminal shell.
+> **A modern, Linux-native productivity shell that integrates seamlessly with your workflow**
 
-# Hello!
-## Key Features
+TruShell is not just another terminal—it's a **productivity powerhouse** that combines task management, time utilities, jokes for breaks, and a native shell experience. Built for developers who want to stay in flow without switching contexts.
 
-- Unified CLI: `atoffice-shell` starts a single interactive shell for jokes, todos, and ChronoTerm.
-- Todo manager: add, update, complete, and list tasks with an SQLite-backed store.
-- ChronoTerm utilities: current time, world clock, timezones, alarms, and stopwatch.
-- Configurable settings: change clock style, time template, joke character, and sound.
-- Platform-safe storage: app data and state are stored in user-specific directories.
-- UV-first install: `uv tool install git+https://github.com/AkshajSinghal/at-office-shell`
+## ✨ Why TruShell?
 
-## Installation
+- ⚡ **All-in-one workspace** - Tasks, time, alarms, and shell in one place
+-  **Beautiful prompts** - Customizable `trushell ❯` prompt with ASCII art
+-  **Linux-first design** - Respects Unix philosophy, works alongside bash/zsh/fish
+- 💾 **Persistent state** - SQLite-backed todos and settings survive restarts
+-  **Fun breaks** - Cow/T-Rex jokes with sound effects when you need a laugh
+- 🌍 **Global awareness** - World clocks, timezone manager, alarms, stopwatch
+-  **Built-in editor** - Quick file editing without leaving the shell
 
-### Install with uv
+## 🚀 Installation
+
+### Using pip (Recommended)
+Note: coming soon
+
+### Using uv (Faster)
+Note: coming soon
+
+### From Source
+```bash
+git clone https://github.com/AkshajSinghal/trushell.git
+cd at-office-shell
+pip install -e .
+```
+
+## 🎯 Quick Start
 
 ```bash
-uv tool install git+https://github.com/AkshajSinghal/at-office-shell
+$ trushell
+Entering TruShell. Type 'exit' to quit.
+trushell ❯ help
+Available commands: joke, joke_trex, addtask, deletetask, updatetask, completetask, showtask, now, time, world, tz, alarm, sw, settings, exit, help
+
+trushell ❯ addtask "Review PR" "Work"
+Task added.
+
+trushell ❯ showtasks
+Todos 💻
+┏━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
+ # ┃ Todo         ┃ Category ┃ Done   ┃
+┡━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━┩
+│ 1 │ Review PR    │ Work     │ ❌     │
+└───┴──────────────┴──────────┴────────┘
+
+trushell ❯ time
+  __
+ / _)
+/_)_
+ /_)
+
+trushell ❯ joke
+ _________________________
+< Your Python code works! >
+ -------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+trushell ❯ ls -la  # Native OS commands work too!
+total 48
+drwxr-xr-x  5 user user 4096 May 29 10:30 .
+...
 ```
 
-### Install with pip
+## 📋 Command Reference
+
+###  Fun & Breaks
+| Command | Description | Example |
+|---------|-------------|---------|
+| `joke` | Random joke with ASCII cow | `joke` |
+| `joke-trex` | T-Rex joke with sound | `joke-trex` |
+
+### ✅ Task Management
+| Command | Description | Example |
+|---------|-------------|---------|
+| `addtask "<task>" "<category>"` | Add a new todo | `addtask "Fix bug" "Dev"` |
+| `deletetask <position>` | Delete task by number | `deletetask 2` |
+| `updatetask <pos> "<task>" "<cat>"` | Update task text/category | `updatetask 1 "New text" "Cat"` |
+| `completetask <position>` | Mark task as done | `completetask 1` |
+| `showtasks` | Display all tasks | `showtasks` |
+
+###  Time & Productivity
+| Command | Description | Example |
+|---------|-------------|---------|
+| `now` | Current local time | `now` |
+| `time` | ASCII clock display | `time` |
+| `world` | Show favorite timezones | `world` |
+| `tz list` | List saved timezones | `tz list` |
+| `tz add <IANA>` | Add timezone | `tz add Europe/London` |
+| `tz remove <name>` | Remove timezone | `tz remove London` |
+| `alarm list` | List alarms | `alarm list` |
+| `alarm add "<HH:MM>" --label "X"` | Set alarm | `alarm add "07:30" --label "Morning"` |
+| `sw start` | Start stopwatch | `sw start` |
+| `sw pause` | Pause stopwatch | `sw pause` |
+| `sw lap` | Record lap time | `sw lap` |
+| `sw reset` | Reset stopwatch | `sw reset` |
+| `sw show` | Show current time | `sw show` |
+
+### ⚙️ Configuration
+| Command | Description | Example |
+|---------|-------------|---------|
+| `settings` | Interactive settings UI | `settings` |
+| `edit <file>` | Edit file in built-in editor | `edit config.txt` |
+
+### 🖥️ Shell Features
+| Command | Description | Example |
+|---------|-------------|---------|
+| `cd <dir>` | Change directory (native) | `cd ~/projects` |
+| Any OS command | Falls back to system shell | `ls`, `git status`, etc. |
+| `help` | Show available commands | `help` |
+| `exit` or `quit` | Exit TruShell | `exit` |
+
+## 🎨 Customization
+
+Configure your experience with the `settings` command:
 
 ```bash
-python -m pip install git+https://github.com/AkshajSinghal/at-office-shell
+trushell ❯ settings
 ```
 
-## Quick Start
+Adjust:
+- **Clock style** - Choose ASCII art format
+- **Time template** - Customize time display format
+- **Joke character** - Switch between cow, trex, dragon, etc.
+- **Sound effects** - Enable/disable joke sounds
 
+Settings are stored persistently in your user data directory.
+
+## 🏗️ Architecture
+
+TruShell is built with a modular architecture:
+
+```
+atoffice_shell/
+├── cli.py              # CLI entrypoint & command routing
+├── project.py          # Interactive shell REPL loop
+├── todocli.py          # Todo management commands
+├── pyfunny.py          # Jokes & ASCII art
+── settings.py         # Persistent configuration
+├── database.py         # SQLite storage layer
+└── chronoterm/         # Time utilities
+    ├── shell.py        # ChronoTerm command handler
+    ├── state.py        # State management
+    └── sounds/         # Sound effect files
+```
+
+**Key Design Principles:**
+- **SQLite-backed storage** - Todos and settings persist across sessions
+- **Platform-safe paths** - Uses OS-specific app data directories
+- **Native fallback** - Unrecognized commands pass through to system shell
+- **Textual UI** - Modern terminal UI framework for settings & editor
+
+##  TruShell vs Traditional Shells
+
+| Feature | Bash/Zsh/Fish | TruShell |
+|---------|---------------|----------|
+| Task Management | ❌ External tools needed | ✅ Built-in |
+| Time Utilities | ❌ Manual setup | ✅ World clocks, alarms, stopwatch |
+| Productivity Focus | ⚠️ General purpose | ✅ Optimized for workflow |
+| Fun Breaks | ❌ None | ✅ Jokes with ASCII art |
+| Learning Curve |  Moderate-High | 📉 Low (familiar commands) |
+| Extensibility | ✅ Plugins/scripts | ✅ Python-based |
+
+**TruShell complements your existing shell**—use it for productivity tasks while keeping bash/zsh for system administration.
+
+## ️ Development
+
+### Prerequisites
+- Python 3.10+
+- [Poetry](https://python-poetry.org/) or pip
+
+### Setup
 ```bash
-atoffice-shell
+git clone https://github.com/AkshajSinghal/at-office-shell.git
+cd at-office-shell
+poetry install
+# or
+pip install -e .
 ```
 
-Inside the app, try:
-
-```text
-joke
-showtasks
-addtask "Review PR" "Work"
-time
-world
-settings
-edit
-```
-
-## CLI Commands
-
-- `atoffice-shell` — start the interactive shell
-- `atoffice-shell version` — show the installed version
-- `atoffice-shell joke` — tell a joke with ASCII art
-- `atoffice-shell joke-trex` — tell a T-Rex joke
-- `atoffice-shell addtask <task> <category>` — add a todo
-- `atoffice-shell deletetask <position>` — delete a todo
-- `atoffice-shell updatetask <position> [task] [category]` — update a todo
-- `atoffice-shell completetask <position>` — mark a todo done
-- `atoffice-shell showtasks` — list all todos
-- `atoffice-shell settings` — configure clock and joke preferences
-- `atoffice-shell now` — show the current local time
-- `atoffice-shell time` — show ASCII clock output
-- `atoffice-shell world` — show favorite world timezones
-- `atoffice-shell tz list|add|remove` — manage saved zones
-- `atoffice-shell alarm list|add|remove` — manage alarms
-- `atoffice-shell sw show|start|pause|lap|reset` — control stopwatch
-
-## Example Usage
-
+### Run Tests
 ```bash
-atoffice-shell addtask "Finish README" "Documentation"
-atoffice-shell showtasks
-atoffice-shell tz add Europe/London
-atoffice-shell alarm add "07:30" --label "Morning"
+pytest tests/
 ```
 
-## Architecture Overview
+### Build Package
+```bash
+python -m build
+twine upload dist/*
+```
 
-The package is organized into a single installable Python package:
+## 🤝 Contributing
 
-- `atoffice_shell/cli.py` — CLI entrypoint and command routing
-- `atoffice_shell/project.py` — interactive shell logic
-- `atoffice_shell/pyfunny.py` — joke commands and sound handling
-- `atoffice_shell/todocli.py` — todo command implementations
-- `atoffice_shell/database.py` — SQLite storage in the user data directory
-- `atoffice_shell/settings.py` — platform-safe settings manager
-- `atoffice_shell/chronoterm/` — time, timezone, alarm, and stopwatch features
+Contributions are welcome! Please:
+1. Read [CONTRIBUTING.md](CONTRIBUTING.md)
+2. Check existing [issues](https://github.com/AkshajSinghal/at-office-shell/issues)
+3. Fork and create a pull request
 
-## Contributing
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community guidelines.
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or pull request.
+## 📦 Dependencies
 
-## Roadmap
+- **[Typer](https://typer.tiangolo.com/)** - Modern CLI framework
+- **[Textual](https://textual.textualize.io/)** - Terminal UI toolkit
+- **[pyjokes](https://github.com/pyjokes/pyjokes)** - Joke library
+- **[cowsay](https://github.com/vaichidrewar/cowsay-python)** - ASCII art
+- **[playsound](https://github.com/TaylorSMarks/playsound)** - Audio playback
+- **SQLite3** - Built-in database (no extra install needed)
 
-- Add more sound and joke options
-- Improve shell prompts and command history
-- Add serialization tests for state and data storage
-- Expand support for cross-platform audio playback
+## 📄 License
 
-## License
+Apache 2.0 - See [LICENSE](LICENSE) for details.
 
-Apache 2.0. See [LICENSE](LICENSE) for details.
+## 🙏 Acknowledgments
+
+- Inspired by the Unix philosophy of small, composable tools
+- Built with love for the Linux community
+- Thanks to all contributors and early testers
+
+---
+
+## 🌟 Star this repo if TruShell boosts your productivity!
+
+[![GitHub stars](https://img.shields.io/github/stars/AkshajSinghal/at-office-shell?style=social)](https://github.com/AkshajSinghal/at-office-shell)
+[![PyPI version](https://img.shields.io/pypi/v/trushell)](https://pypi.org/project/trushell/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+
+---
+
+**Made with ❤️ for Linux users who value productivity and fun.**
