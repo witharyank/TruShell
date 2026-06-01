@@ -19,24 +19,41 @@ def _sound_path(filename: str) -> Path:
 
 def _play_sound(filename: str) -> None:
     sound_path = _sound_path(filename)
-    
+
     if not sound_path.exists():
         typer.secho(f"Sound file missing: {sound_path}", fg=typer.colors.YELLOW)
         return
 
     try:
-        play_audio_file(sound_path)
+        played_selected_sound = play_audio_file(sound_path)
     except Exception:
-        typer.secho("Unable to play selected sound. Falling back to alarm.", fg=typer.colors.YELLOW)
+        typer.secho(
+            "Unable to play selected sound. Falling back to alarm.",
+            fg=typer.colors.YELLOW,
+        )
         try:
             play_alarm()
         except Exception:
-            typer.secho("Unable to play sound. Continuing without audio.", fg=typer.colors.YELLOW)
+            typer.secho(
+                "Unable to play sound. Continuing without audio.",
+                fg=typer.colors.YELLOW,
+            )
+        return
+
+    if not played_selected_sound:
+        typer.secho(
+            "Selected sound playback was attempted but failed. "
+            "Skipping fallback to avoid overlapping audio.",
+            fg=typer.colors.YELLOW,
+        )
 
 
 def _joke_preferences() -> tuple[str, str]:
     state = StateStore().load()
-    return state.joke_character or DEFAULT_JOKE_CHARACTER, state.joke_sound or DEFAULT_JOKE_SOUND
+    return (
+        state.joke_character or DEFAULT_JOKE_CHARACTER,
+        state.joke_sound or DEFAULT_JOKE_SOUND,
+    )
 
 
 def _render_joke(character_name: str, text: str) -> str:

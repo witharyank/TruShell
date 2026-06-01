@@ -27,27 +27,31 @@ def _resolve_windows_sound_path(path: Path) -> Path | None:
     return None
 
 
-def play_audio_file(path: str | Path) -> None:
-    """Play a specific audio asset when a platform player is available."""
+def play_audio_file(path: str | Path) -> bool:
+    """Play a specific audio asset when a platform player is available.
+
+    Returns False when a player was attempted but did not confirm success.
+    """
     sound_path = Path(path)
 
     if sys.platform.startswith("win"):
         playable_path = _resolve_windows_sound_path(sound_path)
         if playable_path is None:
-            raise RuntimeError(f"Windows playback requires a .wav fallback for {sound_path.name}")
+            raise RuntimeError(
+                f"Windows playback requires a .wav fallback for {sound_path.name}"
+            )
 
         import winsound
 
         winsound.PlaySound(str(playable_path), winsound.SND_FILENAME)
-        return
+        return True
 
     if sys.platform == "darwin":
         if not shutil.which("afplay"):
             raise RuntimeError("afplay is unavailable")
-        if _run_quietly(["afplay", str(sound_path)]):
-            return
-        raise RuntimeError(f"afplay failed for {sound_path}")
+        return _run_quietly(["afplay", str(sound_path)])
 
+    attempted_player = False
     for player in (
         ["paplay", str(sound_path)],
         ["aplay", str(sound_path)],
@@ -55,8 +59,13 @@ def play_audio_file(path: str | Path) -> None:
         ["mpg123", "-q", str(sound_path)],
         ["mpg321", "-q", str(sound_path)],
     ):
-        if shutil.which(player[0]) and _run_quietly(player):
-            return
+        if shutil.which(player[0]):
+            attempted_player = True
+            if _run_quietly(player):
+                return True
+
+    if attempted_player:
+        return False
 
     raise RuntimeError(f"No supported Linux audio player could play {sound_path}")
 
@@ -66,25 +75,29 @@ def play_alarm() -> None:
     try:
         if sys.platform.startswith("win"):
             import winsound
+
             winsound.Beep(1200, 400)
             winsound.Beep(900, 400)
-        
+
         elif sys.platform == "darwin":
             _run_quietly(["afplay", "/System/Library/Sounds/Glass.aiff"])
-        
+
         else:  # Linux/Unix
             for cmd in [
-                ["paplay", "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"],
+                [
+                    "paplay",
+                    "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga",
+                ],
                 ["aplay", "/usr/share/sounds/alsa/Front_Center.wav"],
                 ["canberra-gtk-play", "--id=alarm-clock-elapsed"],
             ]:
                 if shutil.which(cmd[0]):
                     if _run_quietly(cmd):
                         return
-            
+
             sys.stdout.write("\007" * 3)
             sys.stdout.flush()
-    
+
     except Exception:
         sys.stdout.write("\007")
         sys.stdout.flush()
