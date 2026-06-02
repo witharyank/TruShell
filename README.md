@@ -1,68 +1,55 @@
-# 🐄 TruShell
+🐄 TruShell - a lightweight, context‑aware shell for developers
+===========================================================
 
-TruShell is a small productivity shell for people who want task tracking and time
-tools next to ordinary terminal commands. It is not meant to replace bash, zsh,
-fish, or PowerShell; it sits beside them and handles the lightweight workflow
-bits that are easy to forget during a coding session.
+TruShell is not a full replacement for bash or zsh. It is a small
+utility shell that sits next to your normal terminal and helps you
+track tasks, check times, set alarms, and run ordinary commands.
 
-## What It Does
+It is written in Python and uses a SQLite database for todos.
+When you type a command TruShell does not recognise, it passes it
+directly to the host system’s shell (bash, cmd, etc.).
 
-- Keeps todos in SQLite with stable display positions.
-- Shows local time, world clocks, alarms, and a stopwatch through ChronoTerm.
-- Falls back to host operating-system commands when a command is not handled by
-  TruShell.
-- Opens a Textual editor for quick file edits from the REPL.
-- Supports short joke breaks with configurable cowsay characters and optional
-  local sound files.
 
-## Install
+What makes TruShell useful
+--------------------------
 
-```bash
-pip install trushell
-```
+  *  Built‑in todo manager with stable task numbers
+     – add, delete, update, complete, show
+     – categories and done/open status stored in SQLite
 
-For local development:
+  *  Time tools without leaving your terminal
+     – ‘now’ shows local time
+     – ‘world’ lists your saved time zones
+     – ‘alarm’ schedules one‑shot reminders
+     – ‘sw’ controls a stopwatch (start, pause, lap, reset)
 
-```bash
-git clone https://github.com/AkshajSinghal/trushell.git
-cd trushell
-pip install -e ".[dev]"
-```
+  *  Jokes, because work needs breaks
+     – ‘joke’ shows a random joke with cowsay‑style art
+     – ‘joke_trex’ for a T‑Rex joke, with optional sound
+     – you can change the character via settings
 
-After installation, the `trushell` console script is added to your shell `PATH` and can be run directly.
+  *  Built‑in full‑screen editor (Textual)
+     – ‘edit <filename>’ opens a quick editor inside the REPL
 
-If you are working from the source tree without installing, run:
+  *  Safe external command execution
+     – piped / chained commands are blocked
+     – external commands run without a shell when possible
+     – optional CPU/memory monitoring if psutil is present
 
-```bash
-PYTHONPATH=. python -m trushell
-```
 
-## Quick Start
+Quick start
+-----------
 
-```bash
-$ trushell
-Entering TruShell. Type 'exit' to quit.
-trushell> help
-Available commands: joke, joke_trex, addtask, deletetask, updatetask, completetask, showtask, now, time, world, tz, alarm, sw, settings, exit, help
+Install from PyPI:
 
-trushell> addtask "Review PR" "Work"
-Task added.
+    `pip install trushell`
 
-trushell> showtasks
-Todos
- #    Todo                 Category      Done
- 1    Review PR            Work          open
+Then run:
 
-trushell> time
-             ___________________
-            |  _______________  |
-            | |     14:30     | |
-            | |_______________| |
-            |  ___ ___ ___ ___  |
-            |_|___|___|___|___|_|
+    `trushell`
 
-trushell> ls
-```
+Inside TruShell, type ‘help’ for a list of commands.
+Type ‘exit’ or Ctrl‑D to quit.
 
 ## Commands
 
@@ -141,16 +128,91 @@ trushell/
     sound.py             platform-specific audio fallback
 ```
 
-## Development
+Core commands (most useful)
+----------------------------
 
-```bash
-pip install -e ".[dev]"
-pytest tests/
-```
+Todo management:
+    `addtask "task description" "Category"`
+    `deletetask <number>`
+    `updatetask <number> "new desc" "new category"`
+    `completetask <number>`
+    `showtasks`
 
-The package metadata is in `pyproject.toml`; the runtime version exported by
-`trushell.__version__` should be kept in sync with it.
+Time & alarms:
+    now
+    time                     – shows an ASCII clock
+    world
+    tz list | add <zone> | remove <id>
+    alarm list | add HH:MM --label "name" | remove <id>
+    sw start | pause | lap | reset | show
 
-## License
+Other:
+    edit <filename>
+    cd <dir>
+    settings                 – change preferences interactively
+    joke
+    joke_trex
 
-Apache-2.0. See [LICENSE](LICENSE) for details.
+
+Configuration
+-------------
+
+Run the ‘settings’ command inside TruShell. You can change:
+
+  *  clock style (LCD, wrist watch, desktop clock)
+  *  12h / 24h format
+  *  cowsay character for jokes (cow, trex, dragon, tux, kitty, …)
+  *  joke sound (choose from available .mp3 or .wav files)
+
+Settings are saved automatically.
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=AkshajSinghal%2FTruShell&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AkshajSinghal/TruShell&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AkshajSinghal/TruShell&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=AkshajSinghal/TruShell&type=date&legend=top-left" />
+ </picture>
+</a>
+
+
+Where data lives
+----------------
+
+Todos and application preferences are stored in SQLite. The database
+file is placed in the platform’s standard user data directory:
+
+  *  Linux:   ~/.local/share/trushell/
+  *  macOS:   ~/Library/Application Support/trushell/
+  *  Windows: %APPDATA%\trushell\
+
+Old JSON state files (from earlier versions) are automatically
+renamed to .bak and migrated into SQLite on first run.
+
+
+Security notes
+--------------
+
+TruShell blocks commands that contain ‘|’, ‘>’, ‘&&’, or ‘||’ to prevent
+accidental chaining inside the REPL. External commands are executed
+using Python’s subprocess without a shell when possible.
+
+If you want to use shell operators, exit TruShell and run the command
+in your normal shell.
+
+
+Development
+-----------
+
+Tests:    pytest tests/
+Version:  kept in sync between trushell/__init__.py and pyproject.toml
+
+To add a custom sound for jokes, put an .mp3 or .wav file into
+trushell/chronoterm/sounds/ – it will appear in the ‘settings’ menu.
+
+
+License
+-------
+
+Apache 2.0 – see LICENSE file in the repository.
