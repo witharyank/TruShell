@@ -51,12 +51,81 @@ Then run:
 Inside TruShell, type ‘help’ for a list of commands.
 Type ‘exit’ or Ctrl‑D to quit.
 
-To run from source:
-```
-    git clone https://github.com/AkshajSinghal/trushell
-    cd trushell
-    pip install -e .
-    PYTHONPATH=. python -m trushell
+## Commands
+
+### Todo
+
+| Command | Description |
+| --- | --- |
+| `addtask "<task>" "<category>"` | Add a new todo. |
+| `deletetask <position>` | Delete by the number shown in `showtasks`. |
+| `updatetask <position> "<task>" "<category>"` | Update task text and category. |
+| `completetask <position>` | Mark a task as done. |
+| `showtasks` | Print the current todo list. |
+
+### Time
+
+| Command | Description |
+| --- | --- |
+| `now` | Show current local time. |
+| `time` | Show the configured ASCII clock. |
+| `world` | Show saved time zones. |
+| `tz list` | List saved time zones. |
+| `tz add <IANA>` | Add a time zone such as `Europe/London`. |
+| `tz remove <IANA>` | Remove a saved time zone. |
+| `alarm list` | List alarms. |
+| `alarm add "<HH:MM>" --label "Name"` | Add an alarm. |
+| `alarm remove <id>` | Remove an alarm by ID. |
+| `sw start`, `sw pause`, `sw lap`, `sw reset`, `sw show` | Stopwatch controls. |
+
+### Shell And Settings
+
+| Command | Description |
+| --- | --- |
+| `settings` | Change persisted preferences. |
+| `edit <file>` | Open the built-in Textual editor. |
+| `cd <dir>` | Change TruShell's current directory. |
+| `z [options] [pattern]` | Jump to or list frequently used directories by fuzzy path matching. |
+| `help` | Print command help. |
+| `exit` or `quit` | Leave the REPL. |
+
+Unrecognized commands are executed directly through the host OS without shell
+operator expansion. Commands containing pipes, redirects, or chained operators
+are rejected for now because they need a proper parser before they can be passed
+through safely.
+
+## Storage
+
+Todos and application preferences are stored in SQLite under the platform's user
+data directory. Older JSON state files are migrated into SQLite on first load and
+renamed to a `.bak` file so the original settings are not silently discarded.
+
+## Architecture Notes
+
+TruShell uses a few terminal libraries, each for a narrow job:
+
+- Typer owns command parsing and CLI entry points.
+- Rich owns formatted terminal output such as tables and styled status text.
+- Textual is used only for the full-screen editor, where a widget toolkit is
+  more appropriate than line-by-line terminal output.
+
+The main modules are:
+
+```text
+trushell/
+  cli.py                 direct CLI commands
+  project.py             interactive REPL and host-command fallback
+  todocli.py             todo commands
+  database.py            SQLite connection and persistence helpers
+  settings.py            prompt-based preference editor
+  pyfunny.py             jokes, cowsay rendering, and sound selection
+  chronoterm/
+    shell.py             time-related commands
+    state.py             SQLite-backed app state with JSON migration
+    alarms.py            alarm scheduling
+    timezones.py         world clock helpers
+    stopwatch.py         stopwatch state
+    sound.py             platform-specific audio fallback
 ```
 
 Core commands (most useful)
