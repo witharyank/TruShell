@@ -1,145 +1,68 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
-from typing import Sequence
+from typing import Any
 
-import typer
-
-from trushell.state import StateStore
-
-COMMANDS = ["time", "world", "joke"]
-TIME_TEMPLATES = [
-    ("lcd", "LCD Display"),
-    ("wrist_watch", "Wrist Watch"),
-    ("desktop", "Desktop Clock"),
-]
-CLOCK_FORMATS = [
-    ("24h", "24 Hour (Military)"),
-    ("12h", "12 Hour (AM/PM)"),
-]
-JOKE_CHARACTERS = [
-    "cow",
-    "trex",
-    "dragon",
-    "tux",
-    "kitty",
-    "turkey",
-    "stegosaurus",
-    "ghostbusters",
-    "pig",
-    "daemon",
-]
+DEFAULT_SETTINGS: dict[str, Any] = {
+    "theme": "dark",
+    "prompt_symbol": "➜",
+    "show_git_status": True,
+    "auto_complete": True,
+    "csv_max_rows": 50,
+}
 
 
-def _select_option(prompt: str, options: Sequence[str]) -> str | None:
-    typer.echo("")
-    typer.echo(prompt)
-    for index, option in enumerate(options, start=1):
-        typer.echo(f"  {index}. {option}")
+class SettingsManager:
+    """Load and save TruShell configuration from ~/.trushell/config.json."""
 
-    selection = typer.prompt("Choose an option (or leave blank to cancel)").strip()
-    if not selection:
-        return None
+    def __init__(self, config_path: Path | None = None) -> None:
+        self.config_path = config_path or Path.home() / ".trushell" / "config.json"
+        self.settings: dict[str, Any] = {}
 
-    if selection.isdigit():
-        index = int(selection) - 1
-        if 0 <= index < len(options):
-            return options[index]
+    def _ensure_directory(self) -> None:
+        self.config_path.parent.mkdir(parents=True, exist_ok=True)
 
-    if selection in options:
-        return selection
+    def load(self) -> dict[str, Any]:
+        self._ensure_directory()
+        if not self.config_path.exists():
+            self.settings = DEFAULT_SETTINGS.copy()
+            self.save()
+            return self.settings
 
-    typer.secho("Invalid selection.", fg=typer.colors.RED)
-    return None
+        try:
+            raw = self.config_path.read_text(encoding="utf-8")
+            data = json.loads(raw)
+        except (json.JSONDecodeError, OSError):
+            self.settings = DEFAULT_SETTINGS.copy()
+            self.save()
+            return self.settings
 
+        self.settings = {**DEFAULT_SETTINGS, **data}
+        return self.settings
 
-def _available_sound_files() -> list[str]:
-    sounds_dir = Path(__file__).resolve().parents[1] / "sounds"
-    if not sounds_dir.exists():
-        return []
-    return sorted([path.name for path in sounds_dir.iterdir() if path.is_file()])
+    def save(self) -> None:
+        self._ensure_directory()
+        self.config_path.write_text(
+            json.dumps(self.settings, indent=2, sort_keys=True), encoding="utf-8"
+        )
 
+    def get(self, key: str) -> Any:
+        return self.settings.get(key, DEFAULT_SETTINGS.get(key))
 
-def _edit_time_template() -> None:
-    target = _select_option("Select a template for the time command:", [label for _, label in TIME_TEMPLATES])
-    if target is None:
-        typer.secho("Settings cancelled.", fg=typer.colors.YELLOW)
-        return
-
-    selected = next((key for key, label in TIME_TEMPLATES if label == target), None)
-    if selected is None:
-        typer.secho("Template not found.", fg=typer.colors.RED)
-        return
-
-    state = StateStore().load()
-    state.time_template = selected
-    StateStore().save(state)
-    typer.secho(f"Time template updated to {target}.", fg=typer.colors.GREEN)
-
-
-def _edit_clock_format() -> None:
-    target = _select_option("Select a clock format for the time command:", [label for _, label in CLOCK_FORMATS])
-    if target is None:
-        typer.secho("Settings cancelled.", fg=typer.colors.YELLOW)
-        return
-
-    selected = next((key for key, label in CLOCK_FORMATS if label == target), None)
-    if selected is None:
-        typer.secho("Clock format not found.", fg=typer.colors.RED)
-        return
-
-    state = StateStore().load()
-    state.clock_format = selected
-    StateStore().save(state)
-    typer.secho(f"Clock format updated to {target}.", fg=typer.colors.GREEN)
-
-
-def _edit_joke_character() -> None:
-    target = _select_option("Select a character for jokes:", JOKE_CHARACTERS)
-    if target is None:
-        typer.secho("Settings cancelled.", fg=typer.colors.YELLOW)
-        return
-
-    state = StateStore().load()
-    state.joke_character = target
-    StateStore().save(state)
-    typer.secho(f"Joke character updated to {target}.", fg=typer.colors.GREEN)
-
-
-def _edit_joke_sound() -> None:
-    sound_files = _available_sound_files()
-    if not sound_files:
-        typer.secho("No sounds found.", fg=typer.colors.RED)
-        return
-
-    target = _select_option("Select a sound for jokes:", sound_files)
-    if target is None:
-        typer.secho("Settings cancelled.", fg=typer.colors.YELLOW)
-        return
-
-    state = StateStore().load()
-    state.joke_sound = target
-    StateStore().save(state)
-    typer.secho(f"Joke sound updated to {target}.", fg=typer.colors.GREEN)
+    def set(self, key: str, value: Any) -> None:
+        self.settings[key] = value
 
 
 def launch_settings() -> None:
-    command = _select_option("Select a command to configure:", COMMANDS)
-    if command is None:
-        typer.secho("Settings closed.", fg=typer.colors.YELLOW)
-        return
+    try:
+        from trushell.commands.settings import SettingsApp
 
-    if command == "time":
-        _edit_time_template()
-    elif command == "world":
-        _edit_clock_format()
-    elif command == "joke":
-        option = _select_option("Select a joke setting to change:", ["Character", "Sound"])
-        if option == "Character":
-            _edit_joke_character()
-        elif option == "Sound":
-            _edit_joke_sound()
-        else:
-            typer.secho("Settings cancelled.", fg=typer.colors.YELLOW)
-    else:
-        typer.secho(f"No editable settings available for '{command}'.", fg=typer.colors.YELLOW)
+        try:
+            SettingsApp().run(inline=True)
+        except TypeError:
+            SettingsApp().run()
+    except Exception as error:
+        from rich.console import Console
+
+        Console().print(f"[red]Unable to launch settings: {error}[/red]")

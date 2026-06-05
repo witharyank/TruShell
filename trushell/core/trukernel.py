@@ -9,6 +9,7 @@ from typing import Any
 
 from ..utils.logger import get_logger
 from ..utils.manifest_parser import parse_manifest
+from .plugin_manager import PluginManager
 
 # Sentinel value returned when user types 'exit'
 EXIT_SENTINEL = "__TRUSHELL_EXIT__"
@@ -25,7 +26,14 @@ class TruKernel:
         self.base_dir = Path(__file__).resolve().parents[2]
         self.registry: dict[str, dict[str, Any]] = {}
         self._loaded_modules: dict[str, Any] = {}
+        # Initialize plugin manager
+        self.plugin_manager = PluginManager.instance(self)
         self._load_manifests()
+        # Load plugins after manifests so plugin-registered commands can override
+        try:
+            self.plugin_manager.load_all()
+        except Exception:
+            self.logger.exception("PluginManager failed to load plugins")
         _kernel_instance = self  # Store reference for get_kernel()
 
     # ------------------------------------------------------------------ #
@@ -166,13 +174,47 @@ class TruKernel:
         command = parts[0].lower()
         args = parts[1] if len(parts) > 1 else ""
 
+        # Run pre_exec hooks from active plugins. Plugins may modify command/args.
+        try:
+            for inst in self.plugin_manager.plugins.values():
+                try:
+                    modified = inst.pre_exec(command, args)
+                    if modified and isinstance(modified, tuple) and len(modified) == 2:
+                        command, args = modified
+                except Exception:
+                    self.logger.exception("pre_exec hook failed for plugin %s", getattr(inst, "name", "?"))
+        except Exception:
+            self.logger.exception("Error running plugin pre_exec hooks")
+
         # 1. Try manifest registry
         entry = self.registry.get(command)
         if entry is not None:
-            return self._execute_entry(entry, args=args)
+            result = self._execute_entry(entry, args=args)
+            # post_exec hooks
+            try:
+                output = "" if result is True or result is False else str(result)
+                for inst in self.plugin_manager.plugins.values():
+                    try:
+                        inst.post_exec(command, output)
+                    except Exception:
+                        self.logger.exception("post_exec hook failed for plugin %s", getattr(inst, "name", "?"))
+            except Exception:
+                self.logger.exception("Error running plugin post_exec hooks")
+            return result
 
         # 2. Fall back to OS passthrough for unknown commands
-        return self._os_passthrough(command, args)
+        result = self._os_passthrough(command, args)
+        # post_exec hooks for os passthrough
+        try:
+            output = "" if result is True or result is False else str(result)
+            for inst in self.plugin_manager.plugins.values():
+                try:
+                    inst.post_exec(command, output)
+                except Exception:
+                    self.logger.exception("post_exec hook failed for plugin %s", getattr(inst, "name", "?"))
+        except Exception:
+            self.logger.exception("Error running plugin post_exec hooks")
+        return result
 
     # ------------------------------------------------------------------ #
     #  OS Passthrough Fallback
