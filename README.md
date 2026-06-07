@@ -1,3 +1,58 @@
+# 🐄 TruShell
+
+> A lightweight, context-aware shell built for developers who want productivity tools directly inside their terminal.
+
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
+
+TruShell combines task management, alarms, world clocks, jokes, terminal editing, and smart command execution into a single developer-friendly shell experience.
+
+### Why another shell?
+
+Traditional shells like Bash and Zsh are excellent command runners, but they leave productivity workflows to external tools.
+
+TruShell brings those workflows directly into your terminal so you can stay focused without constantly switching applications.
+
+ Install in under 2 minutes  
+ Manage tasks without leaving your shell  
+ Built-in alarms, world clocks, and stopwatch  
+ Full-screen terminal editor  
+ Safer external command execution
+
+## ✨ Key Features
+
+###  Built-in Todo Manager
+Manage tasks directly from your terminal.
+
+- Add, update, delete, and complete tasks
+- Organize by category
+- Persistent SQLite storage
+- Stable task numbering
+
+###  Time & Productivity Tools
+
+- Local time display
+- World clocks and timezone management
+- Alarm scheduling
+- Built-in stopwatch
+
+###  Developer Fun
+
+- Random jokes
+- Multiple character themes
+- Optional sound support
+
+###  Full-Screen Terminal Editor
+
+Edit files directly inside TruShell using Textual-powered UI.
+
+###  Safe Command Execution
+
+- Blocks risky shell chaining operators
+- Avoids unnecessary shell execution
+- Provides safer command handling
+
+
 # 🐄 TruShell 
 A lightweight, context‑aware shell for developers
 
